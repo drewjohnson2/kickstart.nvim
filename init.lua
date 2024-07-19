@@ -1,5 +1,4 @@
 --[[
-
 =====================================================================
 ==================== READ THIS BEFORE CONTINUING ====================
 =====================================================================
@@ -100,6 +99,11 @@ vim.g.have_nerd_font = false
 
 -- Make line numbers default
 vim.opt.number = true
+vim.opt.relativenumber = true
+
+vim.cmd 'set ts=4'
+vim.cmd 'set sw=4'
+
 -- You can also add relative line numbers, to help with jumping.
 --  Experiment for yourself to see if you like it!
 -- vim.opt.relativenumber = true
@@ -142,8 +146,8 @@ vim.opt.splitbelow = true
 -- Sets how neovim will display certain whitespace characters in the editor.
 --  See `:help 'list'`
 --  and `:help 'listchars'`
-vim.opt.list = true
-vim.opt.listchars = { tab = '» ', trail = '·', nbsp = '␣' }
+--vim.opt.list = true
+--vim.opt.listchars = { tab = '» ', trail = '·', nbsp = '␣' }
 
 -- Preview substitutions live, as you type!
 vim.opt.inccommand = 'split'
@@ -160,6 +164,12 @@ vim.opt.scrolloff = 10
 -- Set highlight on search, but clear on pressing <Esc> in normal mode
 vim.opt.hlsearch = true
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
+
+local toggleRN = function()
+  vim.opt.relativenumber = not vim.opt.relativenumber
+end
+
+vim.keymap.set('n', '<C-n>', '<cmd>set invrelativenumber<CR>', { noremap = true, silent = true })
 
 -- Diagnostic keymaps
 vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Go to previous [D]iagnostic message' })
@@ -226,7 +236,7 @@ vim.opt.rtp:prepend(lazypath)
 -- NOTE: Here is where you install your plugins.
 require('lazy').setup({
   -- NOTE: Plugins can be added with a link (or for a github repo: 'owner/repo' link).
-  'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
+  --'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
 
   -- NOTE: Plugins can also be added by using a table,
   -- with the first argument being the link and the following
@@ -236,9 +246,28 @@ require('lazy').setup({
   --
   --  This is equivalent to:
   --    require('Comment').setup({})
+  {
+    'tjdevries/colorbuddy.nvim',
+    config = function()
+      vim.cmd 'colorscheme darker'
+    end,
+  },
 
   -- "gc" to comment visual regions/lines
   { 'numToStr/Comment.nvim', opts = {} },
+  --{ 'nvim-tree/nvim-tree.lua' },
+  {
+    'nvim-neo-tree/neo-tree.nvim',
+    branch = '3.2',
+    dependencies = {
+      'nvim-lua/plenary.nvim',
+      --'nvim-tree/nvim-web-devicons',
+      'MunifTanjim/nui.nvim',
+    },
+    config = function()
+      vim.keymap.set('n', '<leader>t', '<Cmd>Neotree toggle<CR>')
+    end,
+  },
 
   -- Here is a more advanced example where we pass configuration
   -- options to `gitsigns.nvim`. This is equivalent to the following Lua:
@@ -273,28 +302,43 @@ require('lazy').setup({
   -- after the plugin has been loaded:
   --  config = function() ... end
 
-  { -- Useful plugin to show you pending keybinds.
-    'folke/which-key.nvim',
-    event = 'VimEnter', -- Sets the loading event to 'VimEnter'
-    config = function() -- This is the function that runs, AFTER loading
-      require('which-key').setup()
-
-      -- Document existing key chains
-      require('which-key').register {
-        ['<leader>c'] = { name = '[C]ode', _ = 'which_key_ignore' },
-        ['<leader>d'] = { name = '[D]ocument', _ = 'which_key_ignore' },
-        ['<leader>r'] = { name = '[R]ename', _ = 'which_key_ignore' },
-        ['<leader>s'] = { name = '[S]earch', _ = 'which_key_ignore' },
-        ['<leader>w'] = { name = '[W]orkspace', _ = 'which_key_ignore' },
-        ['<leader>t'] = { name = '[T]oggle', _ = 'which_key_ignore' },
-        ['<leader>h'] = { name = 'Git [H]unk', _ = 'which_key_ignore' },
-      }
-      -- visual mode
-      require('which-key').register({
-        ['<leader>h'] = { 'Git [H]unk' },
-      }, { mode = 'v' })
-    end,
-  },
+  --    { -- Useful plugin to show you pending keybinds.
+  --      'folke/which-key.nvim',
+  --      event = 'VimEnter', -- Sets the loading event to 'VimEnter'
+  --      config = function() -- This is the function that runs, AFTER loading
+  --        require('which-key').setup()
+  --        --{"<leader>c", group = "[C]ode},
+  --        -- Document existing key chains
+  --        require('which-key').register {
+  --          { '<leader>c', group = '[C]ode' },
+  --          { '<leader>c_', hidden = true },
+  --          { '<leader>d', group = '[D]ocument' },
+  --          { '<leader>d_', hidden = true },
+  --          { '<leader>r', group = '[R]ename' },
+  --          { '<leader>r_', hidden = true },
+  --          { '<leader>s', group = '[S]earch' },
+  --          { '<leader>s_', hidden = true },
+  --          { '<leader>w', group = '[W]orkspace' },
+  --          { '<leader>w_', hidden = true },
+  --          { '<leader>t', group = '[T]oggle' },
+  --          { '<leader>t_', hidden = true },
+  --          { '<leader>h', group = 'Git [H]unk' },
+  --          { '<leader>h_', hidden = true },
+  --
+  --        -- ['<leader>c'] = { name = '[C]ode', _ = 'which_key_ignore' },
+  --        -- ['<leader>d'] = { name = '[D]ocument', _ = 'which_key_ignore' },
+  --        -- ['<leader>r'] = { name = '[R]ename', _ = 'which_key_ignore' },
+  --        -- ['<leader>s'] = { name = '[S]earch', _ = 'which_key_ignore' },
+  --        -- ['<leader>w'] = { name = '[W]orkspace', _ = 'which_key_ignore' },
+  --        -- ['<leader>t'] = { name = '[T]oggle', _ = 'which_key_ignore' },
+  --        -- ['<leader>h'] = { name = 'Git [H]unk', _ = 'which_key_ignore' },
+  --        }
+  --        -- visual mode
+  --        require('which-key').register {
+  --          { '<leader>h', desc = 'Git [H]unk', mode = 'v' },
+  --        }
+  --      end,
+  --    },
 
   -- NOTE: Plugins can specify dependencies.
   --
@@ -325,7 +369,7 @@ require('lazy').setup({
       { 'nvim-telescope/telescope-ui-select.nvim' },
 
       -- Useful for getting pretty icons, but requires a Nerd Font.
-      { 'nvim-tree/nvim-web-devicons', enabled = vim.g.have_nerd_font },
+      --{ 'nvim-tree/nvim-web-devicons', enabled = vim.g.have_nerd_font },
     },
     config = function()
       -- Telescope is a fuzzy finder that comes with a lot of different things that
@@ -469,14 +513,14 @@ require('lazy').setup({
           -- Jump to the definition of the word under your cursor.
           --  This is where a variable was first declared, or where a function is defined, etc.
           --  To jump back, press <C-t>.
-          map('gd', require('telescope.builtin').lsp_definitions, '[G]oto [D]efinition')
+          map('<leader>gd', require('telescope.builtin').lsp_definitions, '[G]oto [D]efinition')
 
           -- Find references for the word under your cursor.
-          map('gr', require('telescope.builtin').lsp_references, '[G]oto [R]eferences')
+          map('<leader>gr', require('telescope.builtin').lsp_references, '[G]oto [R]eferences')
 
           -- Jump to the implementation of the word under your cursor.
           --  Useful when your language has ways of declaring types without an actual implementation.
-          map('gI', require('telescope.builtin').lsp_implementations, '[G]oto [I]mplementation')
+          map('<leader>gI', require('telescope.builtin').lsp_implementations, '[G]oto [I]mplementation')
 
           -- Jump to the type of the word under your cursor.
           --  Useful when you're not sure what type a variable is and you want to see
@@ -565,7 +609,7 @@ require('lazy').setup({
       --  - settings (table): Override the default settings passed when initializing the server.
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
       local servers = {
-        -- clangd = {},
+        clangd = {},
         -- gopls = {},
         -- pyright = {},
         -- rust_analyzer = {},
@@ -773,26 +817,46 @@ require('lazy').setup({
     end,
   },
 
-  { -- You can easily change to a different colorscheme.
-    -- Change the name of the colorscheme plugin below, and then
-    -- change the command in the config to whatever the name of that colorscheme is.
-    --
-    -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
-    'folke/tokyonight.nvim',
-    priority = 1000, -- Make sure to load this before all the other start plugins.
-    init = function()
-      -- Load the colorscheme here.
-      -- Like many other themes, this one has different styles, and you could load
-      -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-      vim.cmd.colorscheme 'tokyonight-night'
-
-      -- You can configure highlights by doing something like:
-      vim.cmd.hi 'Comment gui=none'
-    end,
-  },
+  --  { -- You can easily change to a different colorscheme.
+  --    -- Change the name of the colorscheme plugin below, and then
+  --    -- change the command in the config to whatever the name of that colorscheme is.
+  --    --
+  --    -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
+  --    'folke/tokyonight.nvim',
+  --    priority = 1000, -- Make sure to load this before all the other start plugins.
+  --    init = function()
+  --      -- Load the colorscheme here.
+  --      -- Like many other themes, this one has different styles, and you could load
+  --      -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
+  --      vim.cmd.colorscheme 'tokyonight-night'
+  --
+  --      -- You can configure highlights by doing something like:
+  --      vim.cmd.hi 'Comment gui=none'
+  --    end,
+  --  },
 
   -- Highlight todo, notes, etc in comments
   { 'folke/todo-comments.nvim', event = 'VimEnter', dependencies = { 'nvim-lua/plenary.nvim' }, opts = { signs = false } },
+
+  -- Color schemes
+  {
+    'rose-pine/neovim',
+    as = 'rose-pine',
+    config = function()
+      require('rose-pine').setup {
+        variant = 'moon',
+        enable = {
+          terminal = true,
+        },
+
+        styles = {
+          bold = true,
+          italic = false,
+          transparency = false,
+        },
+      }
+    end,
+  },
 
   { -- Collection of various small independent plugins/modules
     'echasnovski/mini.nvim',
