@@ -165,11 +165,38 @@ vim.opt.scrolloff = 10
 vim.opt.hlsearch = true
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 
+-- custom keybinds
+vim.keymap.set('n', '<leader>vs', '<cmd>vs<CR>')
+vim.keymap.set('n', '<leader>ut', vim.cmd.UndotreeToggle)
+vim.keymap.set('n', '<C-n>', '<cmd>set invrelativenumber<CR>', { noremap = true, silent = true })
+-- the next two keybinds allows movement of highlighted text
+vim.keymap.set('v', 'J', ":m '>+1<CR>gv=gv")
+vim.keymap.set('v', 'K', ":m '<-2<CR>gv=gv")
+
+-- put next line on same line as your cursor
+-- but keep cursor in place (i think)
+vim.keymap.set('n', 'J', 'mzJ`z')
+
+-- keep cursor in middle with C-d and C-u
+vim.keymap.set('n', '<C-d>', '<C-d>zz')
+vim.keymap.set('n', '<C-u>', '<C-u>zz')
+
+-- need to check on these
+vim.keymap.set('n', 'n', 'nzzzv')
+vim.keymap.set('n', 'N', 'nzzzv')
+
+-- paste from system clipboard
+vim.keymap.set('x', '<leader>p', '"_dP')
+
+-- copy to system clipboard
+-- not sure what the difference between +y and +Y is.
+vim.keymap.set('n', '<leader>y', '"+y')
+vim.keymap.set('v', '<leader>y', '"+y')
+vim.keymap.set('n', '<leader>Y', '"+Y')
+
 local toggleRN = function()
   vim.opt.relativenumber = not vim.opt.relativenumber
 end
-
-vim.keymap.set('n', '<C-n>', '<cmd>set invrelativenumber<CR>', { noremap = true, silent = true })
 
 -- Diagnostic keymaps
 vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Go to previous [D]iagnostic message' })
@@ -246,6 +273,9 @@ require('lazy').setup({
   --
   --  This is equivalent to:
   --    require('Comment').setup({})
+  {
+    'mbbill/undotree',
+  },
   {
     'tjdevries/colorbuddy.nvim',
     config = function()
@@ -609,7 +639,9 @@ require('lazy').setup({
       --  - settings (table): Override the default settings passed when initializing the server.
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
       local servers = {
-        clangd = {},
+        clangd = {
+          init_options = { compilationDatabasePath = '.' },
+        },
         -- gopls = {},
         -- pyright = {},
         -- rust_analyzer = {},
