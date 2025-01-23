@@ -100,9 +100,7 @@ vim.g.have_nerd_font = false
 -- Make line numbers default
 vim.opt.number = true
 vim.opt.relativenumber = true
-
-vim.cmd 'set ts=4'
-vim.cmd 'set sw=4'
+vim.opt.shiftwidth = 4
 
 -- You can also add relative line numbers, to help with jumping.
 --  Experiment for yourself to see if you like it!
@@ -279,7 +277,7 @@ require('lazy').setup({
   {
     'tjdevries/colorbuddy.nvim',
     config = function()
-      vim.cmd 'colorscheme darker'
+      vim.cmd.colorscheme 'darker'
     end,
   },
 
@@ -295,7 +293,52 @@ require('lazy').setup({
       'MunifTanjim/nui.nvim',
     },
     config = function()
-      vim.keymap.set('n', '<leader>t', '<Cmd>Neotree toggle<CR>')
+      vim.keymap.set('n', '<leader>nt', '<Cmd>Neotree toggle<CR>')
+
+      require('neo-tree').setup {
+        default_component_configs = {
+          icon = {
+            folder_closed = '+',
+            folder_open = '-',
+            folder_empty = '%',
+            default = '',
+          },
+          git_status = {
+            symbols = {
+              deleted = '',
+              renamed = '',
+              modified = '',
+              untracked = '',
+              ignored = '',
+              unstaged = '',
+              staged = '',
+              conflict = '',
+            },
+          },
+        },
+        filesystem = {
+          follow_current_file = { enabled = true },
+          filtered_items = {
+            visible = true,
+            hide_dotfiles = false,
+            hide_gitignored = false,
+          },
+          buffers = {
+            follow_current_file = true,
+          },
+          components = {
+            icon = function(config, node, state)
+              if node.type == 'file' then
+                return {
+                  text = '* ',
+                  highlight = config.highlight,
+                }
+              end
+              return require('neo-tree.sources.common.components').icon(config, node, state)
+            end,
+          },
+        },
+      }
     end,
   },
 
@@ -481,7 +524,135 @@ require('lazy').setup({
       end, { desc = '[S]earch [N]eovim files' })
     end,
   },
+  {
+    'wojciech-kulik/xcodebuild.nvim',
+    dependencies = {
+      'nvim-telescope/telescope.nvim',
+      'MunifTanjim/nui.nvim',
+    },
+    config = function()
+      require('xcodebuild').setup {
+        code_coverage = {
+          enabled = true,
+        },
+      }
 
+      vim.keymap.set('n', '<leader>xl', '<cmd>XcodebuildToggleLogs<cr>', { desc = 'Toggle Xcodebuild Logs' })
+      vim.keymap.set('n', '<leader>xb', '<cmd>XcodebuildBuild<cr>', { desc = 'Build Project' })
+      vim.keymap.set('n', '<leader>xr', '<cmd>XcodebuildBuildRun<cr>', { desc = 'Build & Run Project' })
+      vim.keymap.set('n', '<leader>xt', '<cmd>XcodebuildTest<cr>', { desc = 'Run Tests' })
+      vim.keymap.set('n', '<leader>xT', '<cmd>XcodebuildTestClass<cr>', { desc = 'Run This Test Class' })
+      vim.keymap.set('n', '<leader>X', '<cmd>XcodebuildPicker<cr>', { desc = 'Show All Xcodebuild Actions' })
+      vim.keymap.set('n', '<leader>xd', '<cmd>XcodebuildSelectDevice<cr>', { desc = 'Select Device' })
+      vim.keymap.set('n', '<leader>xp', '<cmd>XcodebuildSelectTestPlan<cr>', { desc = 'Select Test Plan' })
+      vim.keymap.set('n', '<leader>xc', '<cmd>XcodebuildToggleCodeCoverage<cr>', { desc = 'Toggle Code Coverage' })
+      vim.keymap.set('n', '<leader>xC', '<cmd>XcodebuildShowCodeCoverageReport<cr>', { desc = 'Show Code Coverage Report' })
+      vim.keymap.set('n', '<leader>xq', '<cmd>Telescope quickfix<cr>', { desc = 'Show QuickFix List' })
+      vim.keymap.set('n', '<leader>te', '<cmd>XcodebuildTestExplorerToggle<cr>', { desc = 'Toggle Test Explorer' })
+    end,
+  },
+  {
+    'mfussenegger/nvim-dap',
+    dependencies = {
+      'wojciech-kulik/xcodebuild.nvim',
+    },
+    config = function()
+      local xcodebuild = require 'xcodebuild.integrations.dap'
+
+      -- TODO: change it to your local codelldb path
+      local codelldbPath = '/Users/drewjohnson/.local/extension/adapter/codelldb'
+
+      xcodebuild.setup(codelldbPath)
+
+      vim.keymap.set('n', '<leader>dd', xcodebuild.build_and_debug, { desc = 'Build & Debug' })
+      vim.keymap.set('n', '<leader>dr', xcodebuild.debug_without_build, { desc = 'Debug Without Building' })
+      vim.keymap.set('n', '<leader>dt', xcodebuild.debug_tests, { desc = 'Debug Tests' })
+      vim.keymap.set('n', '<leader>dT', xcodebuild.debug_class_tests, { desc = 'Debug Class Tests' })
+      vim.keymap.set('n', '<leader>b', xcodebuild.toggle_breakpoint, { desc = 'Toggle Breakpoint' })
+      vim.keymap.set('n', '<leader>B', xcodebuild.toggle_message_breakpoint, { desc = 'Toggle Message Breakpoint' })
+      vim.keymap.set('n', '<leader>dx', xcodebuild.terminate_session, { desc = 'Terminate Debugger' })
+      vim.keymap.set('n', '<F5>', function()
+        require('dap').continue()
+      end)
+      vim.keymap.set('n', '<F10>', function()
+        require('dap').step_over()
+      end)
+      vim.keymap.set('n', '<F11>', function()
+        require('dap').step_into()
+      end)
+      vim.keymap.set('n', '<F12>', function()
+        require('dap').step_out()
+      end)
+
+      vim.keymap.set('n', '<leader>df', function()
+        local widgets = require 'dap.ui.widgets'
+        widgets.centered_float(widgets.frames)
+      end, { desc = 'Show Frames' })
+      vim.keymap.set({ 'n', 'v' }, '<Leader>dp', function()
+        require('dap.ui.widgets').preview().toggle()
+      end, { desc = 'Show Preview' })
+      vim.keymap.set('n', '<Leader>dc', function()
+        local widgets = require 'dap.ui.widgets'
+        widgets.centered_float(widgets.scopes)
+      end, { desc = 'Show Scopes' })
+    end,
+  },
+  {
+    'rcarriga/nvim-dap-ui',
+    dependencies = { 'mfussenegger/nvim-dap', 'nvim-neotest/nvim-nio' },
+    lazy = true,
+    config = function()
+      require('dapui').setup {
+        controls = {
+          element = 'repl',
+          enabled = true,
+        },
+        floating = {
+          border = 'single',
+          mappings = {
+            close = { 'q', '<Esc>' },
+          },
+        },
+        icons = { collapsed = '', expanded = '', current_frame = '' },
+        layouts = {
+          {
+            elements = {
+              { id = 'stacks', size = 0.25 },
+              { id = 'scopes', size = 0.25 },
+              { id = 'breakpoints', size = 0.25 },
+              { id = 'watches', size = 0.25 },
+            },
+            position = 'left',
+            size = 60,
+          },
+          {
+            elements = {
+              { id = 'repl', size = 0.35 },
+              { id = 'console', size = 0.65 },
+            },
+            position = 'bottom',
+            size = 10,
+          },
+        },
+      }
+
+      local dap, dapui = require 'dap', require 'dapui'
+
+      vim.keymap.set('n', '<leader>du', function()
+        dapui.toggle()
+      end, { desc = 'Dap-UI Toggle' })
+
+      dap.listeners.after.event_initialized['dapui_config'] = function()
+        dapui.open()
+      end
+      dap.listeners.before.event_terminated['dapui_config'] = function()
+        dapui.close()
+      end
+      dap.listeners.before.event_exited['dapui_config'] = function()
+        dapui.close()
+      end
+    end,
+  },
   { -- LSP Configuration & Plugins
     'neovim/nvim-lspconfig',
     dependencies = {
@@ -499,6 +670,17 @@ require('lazy').setup({
       { 'folke/neodev.nvim', opts = {} },
     },
     config = function()
+      local lspconfig = require 'lspconfig'
+      lspconfig.sourcekit.setup {
+        capabilities = {
+          workspace = {
+            didChangeWatchedFiles = {
+              dynamicRegistration = true,
+            },
+          },
+        },
+      }
+
       -- Brief aside: **What is LSP?**
       --
       -- LSP is an initialism you've probably heard, but might not understand what it is.
@@ -720,7 +902,7 @@ require('lazy').setup({
         -- Disable "format_on_save lsp_fallback" for languages that don't
         -- have a well standardized coding style. You can add additional
         -- languages here or re-enable it for the disabled ones.
-        local disable_filetypes = { c = true, cpp = true }
+        local disable_filetypes = { c = true, cpp = true, swift = true }
         return {
           timeout_ms = 500,
           lsp_fallback = not disable_filetypes[vim.bo[bufnr].filetype],
@@ -755,6 +937,11 @@ require('lazy').setup({
           return 'make install_jsregexp'
         end)(),
         dependencies = {
+          'hrsh7th/cmp-nvim-lsp',
+          'hrsh7th/cmp-path',
+          'hrsh7th/cmp-buffer',
+          'onsails/lspkind.nvim',
+          'rafamadriz/friendly-snippets',
           -- `friendly-snippets` contains a variety of premade snippets.
           --    See the README about individual language/framework/plugin snippets:
           --    https://github.com/rafamadriz/friendly-snippets
@@ -765,14 +952,26 @@ require('lazy').setup({
           --   end,
           -- },
         },
+        config = function()
+          local cmp = require 'cmp'
+          local opts = {
+            sources = cmp.config.sources {
+              { name = 'nvim_lsm' },
+              { name = 'buffer' },
+              { name = 'path' },
+            },
+          }
+          cmp.setup(opts)
+        end,
       },
       'saadparwaiz1/cmp_luasnip',
 
       -- Adds other completion capabilities.
       --  nvim-cmp does not ship with all sources by default. They are split
       --  into multiple repos for maintenance purposes.
-      'hrsh7th/cmp-nvim-lsp',
-      'hrsh7th/cmp-path',
+      { 'hrsh7th/cmp-nvim-lsp', lazy = true },
+      { 'hrsh7th/cmp-path', lazy = true },
+      { 'hrsh7th/cmp-buffer', lazy = true },
     },
     config = function()
       -- See `:help cmp`
