@@ -1,88 +1,3 @@
---[[
-=====================================================================
-==================== READ THIS BEFORE CONTINUING ====================
-=====================================================================
-========                                    .-----.          ========
-========         .----------------------.   | === |          ========
-========         |.-""""""""""""""""""-.|   |-----|          ========
-========         ||                    ||   | === |          ========
-========         ||   KICKSTART.NVIM   ||   |-----|          ========
-========         ||                    ||   | === |          ========
-========         ||                    ||   |-----|          ========
-========         ||:Tutor              ||   |:::::|          ========
-========         |'-..................-'|   |____o|          ========
-========         `"")----------------(""`   ___________      ========
-========        /::::::::::|  |::::::::::\  \ no mouse \     ========
-========       /:::========|  |==hjkl==:::\  \ required \    ========
-========      '""""""""""""'  '""""""""""""'  '""""""""""'   ========
-========                                                     ========
-=====================================================================
-=====================================================================
-
-What is Kickstart?
-
-  Kickstart.nvim is *not* a distribution.
-
-  Kickstart.nvim is a starting point for your own configuration.
-    The goal is that you can read every line of code, top-to-bottom, understand
-    what your configuration is doing, and modify it to suit your needs.
-
-    Once you've done that, you can start exploring, configuring and tinkering to
-    make Neovim your own! That might mean leaving Kickstart just the way it is for a while
-    or immediately breaking it into modular pieces. It's up to you!
-
-    If you don't know anything about Lua, I recommend taking some time to read through
-    a guide. One possible example which will only take 10-15 minutes:
-      - https://learnxinyminutes.com/docs/lua/
-
-    After understanding a bit more about Lua, you can use `:help lua-guide` as a
-    reference for how Neovim integrates Lua.
-    - :help lua-guide
-    - (or HTML version): https://neovim.io/doc/user/lua-guide.html
-
-Kickstart Guide:
-
-  TODO: The very first thing you should do is to run the command `:Tutor` in Neovim.
-
-    If you don't know what this means, type the following:
-      - <escape key>
-      - :
-      - Tutor
-      - <enter key>
-
-    (If you already know the Neovim basics, you can skip this step.)
-
-  Once you've completed that, you can continue working through **AND READING** the rest
-  of the kickstart init.lua.
-
-  Next, run AND READ `:help`.
-    This will open up a help window with some basic information
-    about reading, navigating and searching the builtin help documentation.
-
-    This should be the first place you go to look when you're stuck or confused
-    with something. It's one of my favorite Neovim features.
-
-    MOST IMPORTANTLY, we provide a keymap "<space>sh" to [s]earch the [h]elp documentation,
-    which is very useful when you're not exactly sure of what you're looking for.
-
-  I have left several `:help X` comments throughout the init.lua
-    These are hints about where to find more information about the relevant settings,
-    plugins or Neovim features used in Kickstart.
-
-   NOTE: Look for lines like this
-
-    Throughout the file. These are for you, the reader, to help you understand what is happening.
-    Feel free to delete them once you know what you're doing, but they should serve as a guide
-    for when you are first encountering a few different constructs in your Neovim config.
-
-If you experience any errors while trying to install kickstart, run `:checkhealth` for more info.
-
-I hope you enjoy your Neovim journey,
-- TJ
-
-P.S. You can delete this when you're done too. It's your config now! :)
---]]
-
 -- Set <space> as the leader key
 -- See `:help mapleader`
 --  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
@@ -100,9 +15,7 @@ vim.g.have_nerd_font = false
 -- Make line numbers default
 vim.opt.number = true
 vim.opt.relativenumber = true
-
-vim.cmd 'set ts=4'
-vim.cmd 'set sw=4'
+vim.opt.shiftwidth = 4
 
 -- You can also add relative line numbers, to help with jumping.
 --  Experiment for yourself to see if you like it!
@@ -167,8 +80,10 @@ vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 
 -- custom keybinds
 vim.keymap.set('n', '<leader>vs', '<cmd>vs<CR>')
+vim.keymap.set('n', '<leader>hs', '<cmd>sp<CR>')
 vim.keymap.set('n', '<leader>ut', vim.cmd.UndotreeToggle)
 vim.keymap.set('n', '<C-n>', '<cmd>set invrelativenumber<CR>', { noremap = true, silent = true })
+
 -- the next two keybinds allows movement of highlighted text
 vim.keymap.set('v', 'J', ":m '>+1<CR>gv=gv")
 vim.keymap.set('v', 'K', ":m '<-2<CR>gv=gv")
@@ -190,19 +105,21 @@ vim.keymap.set('x', '<leader>p', '"_dP')
 
 -- copy to system clipboard
 -- not sure what the difference between +y and +Y is.
-vim.keymap.set('n', '<leader>y', '"+y')
-vim.keymap.set('v', '<leader>y', '"+y')
-vim.keymap.set('n', '<leader>Y', '"+Y')
+vim.keymap.set('n', '<leader>y', '"+y', { desc = 'Copy To System Clipboard' })
+vim.keymap.set('v', '<leader>y', '"+y', { desc = 'Copy To System Clipboard' })
+vim.keymap.set('n', '<leader>Y', '"+Y', { desc = 'Copy To System Clipboard' })
 
-local toggleRN = function()
-  vim.opt.relativenumber = not vim.opt.relativenumber
-end
+-- open vimrc
+vim.keymap.set('n', '<leader>rc', '<cmd>edit $MYVIMRC<CR>', { desc = 'Edit vimrc' })
 
 -- Diagnostic keymaps
 vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Go to previous [D]iagnostic message' })
 vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Go to next [D]iagnostic message' })
 vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, { desc = 'Show diagnostic [E]rror messages' })
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
+
+-- Start terminal mode
+vim.keymap.set('n', '<leader>tt', '<cmd>terminal<CR>', { desc = 'Start Terminal Mode' })
 
 -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
 -- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
@@ -238,6 +155,15 @@ vim.api.nvim_create_autocmd('TextYankPost', {
   group = vim.api.nvim_create_augroup('kickstart-highlight-yank', { clear = true }),
   callback = function()
     vim.highlight.on_yank()
+  end,
+})
+
+vim.api.nvim_create_autocmd('TermOpen', {
+  desc = 'Disable line numbers in terminal mode',
+  group = vim.api.nvim_create_augroup('Terminal', { clear = true }),
+  callback = function()
+    vim.opt_local.number = false
+    vim.opt_local.relativenumber = false
   end,
 })
 
@@ -279,7 +205,7 @@ require('lazy').setup({
   {
     'tjdevries/colorbuddy.nvim',
     config = function()
-      vim.cmd 'colorscheme darker'
+      vim.cmd.colorscheme 'darker'
     end,
   },
 
@@ -295,7 +221,52 @@ require('lazy').setup({
       'MunifTanjim/nui.nvim',
     },
     config = function()
-      vim.keymap.set('n', '<leader>t', '<Cmd>Neotree toggle<CR>')
+      vim.keymap.set('n', '<leader>nt', '<Cmd>Neotree toggle<CR>')
+
+      require('neo-tree').setup {
+        default_component_configs = {
+          icon = {
+            folder_closed = '+',
+            folder_open = '-',
+            folder_empty = '%',
+            default = '',
+          },
+          git_status = {
+            symbols = {
+              deleted = '',
+              renamed = '',
+              modified = '',
+              untracked = '',
+              ignored = '',
+              unstaged = '',
+              staged = '',
+              conflict = '',
+            },
+          },
+        },
+        filesystem = {
+          follow_current_file = { enabled = true },
+          filtered_items = {
+            visible = true,
+            hide_dotfiles = false,
+            hide_gitignored = false,
+          },
+          buffers = {
+            follow_current_file = true,
+          },
+          components = {
+            icon = function(config, node, state)
+              if node.type == 'file' then
+                return {
+                  text = '* ',
+                  highlight = config.highlight,
+                }
+              end
+              return require('neo-tree.sources.common.components').icon(config, node, state)
+            end,
+          },
+        },
+      }
     end,
   },
 
@@ -434,6 +405,7 @@ require('lazy').setup({
         -- },
         -- pickers = {}
         extensions = {
+          fzf = {},
           ['ui-select'] = {
             require('telescope.themes').get_dropdown(),
           },
@@ -450,19 +422,37 @@ require('lazy').setup({
       vim.keymap.set('n', '<leader>sk', builtin.keymaps, { desc = '[S]earch [K]eymaps' })
       vim.keymap.set('n', '<leader>sf', builtin.find_files, { desc = '[S]earch [F]iles' })
       vim.keymap.set('n', '<leader>ss', builtin.builtin, { desc = '[S]earch [S]elect Telescope' })
-      vim.keymap.set('n', '<leader>sw', builtin.grep_string, { desc = '[S]earch current [W]ord' })
-      vim.keymap.set('n', '<leader>sg', builtin.live_grep, { desc = '[S]earch by [G]rep' })
       vim.keymap.set('n', '<leader>sd', builtin.diagnostics, { desc = '[S]earch [D]iagnostics' })
       vim.keymap.set('n', '<leader>sr', builtin.resume, { desc = '[S]earch [R]esume' })
       vim.keymap.set('n', '<leader>s.', builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
       vim.keymap.set('n', '<leader><leader>', builtin.buffers, { desc = '[ ] Find existing buffers' })
 
+      vim.keymap.set('n', '<leader>gc', builtin.git_commits, { desc = '[Git] [C]ommits' })
+
+      vim.keymap.set('n', '<leader>gs', builtin.git_status, { desc = '[G]it [S]atus' })
+
+      vim.keymap.set('n', '<leader>sw', function()
+        builtin.grep_string(require('telescope.themes').get_ivy {
+          winblend = 10,
+          size = { width = 0.99 },
+        })
+      end, { desc = '[S]earch current [W]ord' })
+
+      vim.keymap.set('n', '<leader>sg', function()
+        builtin.live_grep(require('telescope.themes').get_ivy {
+          winblend = 20,
+          size = { width = 0.99 },
+        })
+      end, { desc = '[S]earch by [G]rep' })
+
       -- Slightly advanced example of overriding default behavior and theme
       vim.keymap.set('n', '<leader>/', function()
         -- You can pass additional configuration to Telescope to change the theme, layout, etc.
-        builtin.current_buffer_fuzzy_find(require('telescope.themes').get_dropdown {
+        builtin.current_buffer_fuzzy_find(require('telescope.themes').get_cursor {
           winblend = 10,
           previewer = false,
+          layout_config = { height = 0.25 },
+          prompt_title = 'Find in File',
         })
       end, { desc = '[/] Fuzzily search in current buffer' })
 
@@ -481,7 +471,6 @@ require('lazy').setup({
       end, { desc = '[S]earch [N]eovim files' })
     end,
   },
-
   { -- LSP Configuration & Plugins
     'neovim/nvim-lspconfig',
     dependencies = {
@@ -499,6 +488,8 @@ require('lazy').setup({
       { 'folke/neodev.nvim', opts = {} },
     },
     config = function()
+      local lspconfig = require 'lspconfig'
+
       -- Brief aside: **What is LSP?**
       --
       -- LSP is an initialism you've probably heard, but might not understand what it is.
@@ -576,6 +567,9 @@ require('lazy').setup({
           -- Opens a popup that displays documentation about the word under your cursor
           --  See `:help K` for why this keymap.
           map('K', vim.lsp.buf.hover, 'Hover Documentation')
+
+          vim.lsp.handlers['textDocument/hover'] = vim.lsp.with(vim.lsp.handlers.hover, { border = 'rounded' })
+          vim.lsp.handlers['textDocument/signatureHelp'] = vim.lsp.with(vim.lsp.handlers.signature_help, { border = 'rounded' })
 
           -- WARN: This is not Goto Definition, this is Goto Declaration.
           --  For example, in C this would take you to the header.
@@ -720,7 +714,7 @@ require('lazy').setup({
         -- Disable "format_on_save lsp_fallback" for languages that don't
         -- have a well standardized coding style. You can add additional
         -- languages here or re-enable it for the disabled ones.
-        local disable_filetypes = { c = true, cpp = true }
+        local disable_filetypes = { c = true, cpp = true, swift = true }
         return {
           timeout_ms = 500,
           lsp_fallback = not disable_filetypes[vim.bo[bufnr].filetype],
@@ -755,6 +749,11 @@ require('lazy').setup({
           return 'make install_jsregexp'
         end)(),
         dependencies = {
+          'hrsh7th/cmp-nvim-lsp',
+          'hrsh7th/cmp-path',
+          'hrsh7th/cmp-buffer',
+          'onsails/lspkind.nvim',
+          'rafamadriz/friendly-snippets',
           -- `friendly-snippets` contains a variety of premade snippets.
           --    See the README about individual language/framework/plugin snippets:
           --    https://github.com/rafamadriz/friendly-snippets
@@ -765,14 +764,36 @@ require('lazy').setup({
           --   end,
           -- },
         },
+        config = function()
+          local cmp = require 'cmp'
+          local opts = {
+            sources = cmp.config.sources {
+              { name = 'nvim_lsm' },
+              { name = 'buffer' },
+              { name = 'path' },
+            },
+            window = {
+              completion = {
+                border = 'rounded',
+                winhighlight = 'Normal:CmpNormal,FloatBorder:BorderBg',
+              },
+              documentation = {
+                border = 'rounded',
+                winhighlight = 'Normal:CmpNormal,FloatBorder:BorderBg',
+              },
+            },
+          }
+          cmp.setup(opts)
+        end,
       },
       'saadparwaiz1/cmp_luasnip',
 
       -- Adds other completion capabilities.
       --  nvim-cmp does not ship with all sources by default. They are split
       --  into multiple repos for maintenance purposes.
-      'hrsh7th/cmp-nvim-lsp',
-      'hrsh7th/cmp-path',
+      { 'hrsh7th/cmp-nvim-lsp', lazy = true },
+      { 'hrsh7th/cmp-path', lazy = true },
+      { 'hrsh7th/cmp-buffer', lazy = true },
     },
     config = function()
       -- See `:help cmp`
@@ -871,24 +892,24 @@ require('lazy').setup({
   { 'folke/todo-comments.nvim', event = 'VimEnter', dependencies = { 'nvim-lua/plenary.nvim' }, opts = { signs = false } },
 
   -- Color schemes
-  {
-    'rose-pine/neovim',
-    as = 'rose-pine',
-    config = function()
-      require('rose-pine').setup {
-        variant = 'moon',
-        enable = {
-          terminal = true,
-        },
-
-        styles = {
-          bold = true,
-          italic = false,
-          transparency = false,
-        },
-      }
-    end,
-  },
+  -- {
+  --   'rose-pine/neovim',
+  --   as = 'rose-pine',
+  --   config = function()
+  --     require('rose-pine').setup {
+  --       variant = 'moon',
+  --       enable = {
+  --         terminal = true,
+  --       },
+  --
+  --       styles = {
+  --         bold = true,
+  --         italic = false,
+  --         transparency = false,
+  --       },
+  --     }
+  --   end,
+  -- },
 
   { -- Collection of various small independent plugins/modules
     'echasnovski/mini.nvim',
