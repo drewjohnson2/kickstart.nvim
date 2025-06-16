@@ -1,90 +1,5 @@
---[[
-=====================================================================
-==================== READ THIS BEFORE CONTINUING ====================
-=====================================================================
-========                                    .-----.          ========
-========         .----------------------.   | === |          ========
-========         |.-""""""""""""""""""-.|   |-----|          ========
-========         ||                    ||   | === |          ========
-========         ||   KICKSTART.NVIM   ||   |-----|          ========
-========         ||                    ||   | === |          ========
-========         ||                    ||   |-----|          ========
-========         ||:Tutor              ||   |:::::|          ========
-========         |'-..................-'|   |____o|          ========
-========         `"")----------------(""`   ___________      ========
-========        /::::::::::|  |::::::::::\  \ no mouse \     ========
-========       /:::========|  |==hjkl==:::\  \ required \    ========
-========      '""""""""""""'  '""""""""""""'  '""""""""""'   ========
-========                                                     ========
-=====================================================================
-=====================================================================
-
-What is Kickstart?
-
-  Kickstart.nvim is *not* a distribution.
-
-  Kickstart.nvim is a starting point for your own configuration.
-    The goal is that you can read every line of code, top-to-bottom, understand
-    what your configuration is doing, and modify it to suit your needs.
-
-    Once you've done that, you can start exploring, configuring and tinkering to
-    make Neovim your own! That might mean leaving Kickstart just the way it is for a while
-    or immediately breaking it into modular pieces. It's up to you!
-
-    If you don't know anything about Lua, I recommend taking some time to read through
-    a guide. One possible example which will only take 10-15 minutes:
-      - https://learnxinyminutes.com/docs/lua/
-
-    After understanding a bit more about Lua, you can use `:help lua-guide` as a
-    reference for how Neovim integrates Lua.
-    - :help lua-guide
-    - (or HTML version): https://neovim.io/doc/user/lua-guide.html
-
-Kickstart Guide:
-
-  TODO: The very first thing you should do is to run the command `:Tutor` in Neovim.
-
-    If you don't know what this means, type the following:
-      - <escape key>
-      - :
-      - Tutor
-      - <enter key>
-
-    (If you already know the Neovim basics, you can skip this step.)
-
-  Once you've completed that, you can continue working through **AND READING** the rest
-  of the kickstart init.lua.
-
-  Next, run AND READ `:help`.
-    This will open up a help window with some basic information
-    about reading, navigating and searching the builtin help documentation.
-
-    This should be the first place you go to look when you're stuck or confused
-    with something. It's one of my favorite Neovim features.
-
-    MOST IMPORTANTLY, we provide a keymap "<space>sh" to [s]earch the [h]elp documentation,
-    which is very useful when you're not exactly sure of what you're looking for.
-
-  I have left several `:help X` comments throughout the init.lua
-    These are hints about where to find more information about the relevant settings,
-    plugins or Neovim features used in Kickstart.
-
-   NOTE: Look for lines like this
-
-    Throughout the file. These are for you, the reader, to help you understand what is happening.
-    Feel free to delete them once you know what you're doing, but they should serve as a guide
-    for when you are first encountering a few different constructs in your Neovim config.
-
-If you experience any errors while trying to install kickstart, run `:checkhealth` for more info.
-
-I hope you enjoy your Neovim journey,
-- TJ
-
-P.S. You can delete this when you're done too. It's your config now! :)
---]]
-
 -- Set <space> as the leader key
--- See `:help mapleader`
+-- See `:help mapleader`hover
 --  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
@@ -101,10 +16,6 @@ vim.g.have_nerd_font = false
 vim.opt.number = true
 vim.opt.relativenumber = true
 vim.opt.shiftwidth = 4
-
--- You can also add relative line numbers, to help with jumping.
---  Experiment for yourself to see if you like it!
--- vim.opt.relativenumber = true
 
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.opt.mouse = 'a'
@@ -165,11 +76,13 @@ vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 
 -- custom keybinds
 vim.keymap.set('n', '<leader>vs', '<cmd>vs<CR>')
+vim.keymap.set('n', '<leader>hs', '<cmd>sp<CR>')
 vim.keymap.set('n', '<leader>ut', vim.cmd.UndotreeToggle)
 vim.keymap.set('n', '<C-n>', '<cmd>set invrelativenumber<CR>', { noremap = true, silent = true })
--- the next two keybinds allows movement of highlighted text
 vim.keymap.set('v', 'J', ":m '>+1<CR>gv=gv")
 vim.keymap.set('v', 'K', ":m '<-2<CR>gv=gv")
+
+-- the next two keybinds allows movement of highlighted text
 
 -- put next line on same line as your cursor
 -- but keep cursor in place (i think)
@@ -188,19 +101,20 @@ vim.keymap.set('x', '<leader>p', '"_dP')
 
 -- copy to system clipboard
 -- not sure what the difference between +y and +Y is.
-vim.keymap.set('n', '<leader>y', '"+y')
-vim.keymap.set('v', '<leader>y', '"+y')
-vim.keymap.set('n', '<leader>Y', '"+Y')
+vim.keymap.set('n', '<leader>y', '"+y', { desc = 'Copy To System Clipboard' })
+vim.keymap.set('v', '<leader>y', '"+y', { desc = 'Copy To System Clipboard' })
+vim.keymap.set('n', '<leader>Y', '"+Y', { desc = 'Copy To System Clipboard' })
 
-local toggleRN = function()
-  vim.opt.relativenumber = not vim.opt.relativenumber
-end
+-- open vimrc
+vim.keymap.set('n', '<leader>rc', '<cmd>edit $MYVIMRC<CR>', { desc = 'Edit vimrc' })
 
 -- Diagnostic keymaps
 vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Go to previous [D]iagnostic message' })
 vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Go to next [D]iagnostic message' })
 vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, { desc = 'Show diagnostic [E]rror messages' })
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
+
+vim.keymap.set('n', '<leader>tt', '<cmd>terminal<CR>', { desc = 'Open Terminal' })
 
 -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
 -- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
@@ -236,6 +150,15 @@ vim.api.nvim_create_autocmd('TextYankPost', {
   group = vim.api.nvim_create_augroup('kickstart-highlight-yank', { clear = true }),
   callback = function()
     vim.highlight.on_yank()
+  end,
+})
+
+vim.api.nvim_create_autocmd('TermOpen', {
+  desc = 'Disable line numbers in terminal mode',
+  group = vim.api.nvim_create_augroup('terminal', { clear = true }),
+  callback = function()
+    vim.opt_local.number = false
+    vim.opt_local.relativenumber = false
   end,
 })
 
@@ -470,13 +393,13 @@ require('lazy').setup({
         -- You can put your default mappings / updates / etc. in here
         --  All the info you're looking for is in `:help telescope.setup()`
         --
-        -- defaults = {
-        --   mappings = {
-        --     i = { ['<c-enter>'] = 'to_fuzzy_refine' },
-        --   },
-        -- },
-        -- pickers = {}
+        defaults = {
+          mappings = {
+            i = { ['<c-enter>'] = 'to_fuzzy_refine' },
+          },
+        },
         extensions = {
+          fzf = {},
           ['ui-select'] = {
             require('telescope.themes').get_dropdown(),
           },
@@ -493,19 +416,37 @@ require('lazy').setup({
       vim.keymap.set('n', '<leader>sk', builtin.keymaps, { desc = '[S]earch [K]eymaps' })
       vim.keymap.set('n', '<leader>sf', builtin.find_files, { desc = '[S]earch [F]iles' })
       vim.keymap.set('n', '<leader>ss', builtin.builtin, { desc = '[S]earch [S]elect Telescope' })
-      vim.keymap.set('n', '<leader>sw', builtin.grep_string, { desc = '[S]earch current [W]ord' })
-      vim.keymap.set('n', '<leader>sg', builtin.live_grep, { desc = '[S]earch by [G]rep' })
+
+      vim.keymap.set('n', '<leader>sw', function()
+        builtin.grep_string(require('telescope.themes').get_ivy {
+          layout_config = { height = 0.5 },
+        })
+      end, { desc = '[S]earch current [W]ord' })
+
       vim.keymap.set('n', '<leader>sd', builtin.diagnostics, { desc = '[S]earch [D]iagnostics' })
       vim.keymap.set('n', '<leader>sr', builtin.resume, { desc = '[S]earch [R]esume' })
       vim.keymap.set('n', '<leader>s.', builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
       vim.keymap.set('n', '<leader><leader>', builtin.buffers, { desc = '[ ] Find existing buffers' })
+      vim.keymap.set('n', '<leader>gc', builtin.git_commits, { desc = '[G]it [C]ommits' })
+      vim.keymap.set('n', '<leader>gs', builtin.git_status, { desc = '[G]it [S]tatus' })
+
+      vim.keymap.set('n', '<leader>sg', function()
+        builtin.live_grep(require('telescope.themes').get_ivy {
+          winblend = 20,
+          layout_config = {
+            width = 0.99,
+          },
+        })
+      end, { desc = '[S]earch by [G]rep' })
 
       -- Slightly advanced example of overriding default behavior and theme
       vim.keymap.set('n', '<leader>/', function()
         -- You can pass additional configuration to Telescope to change the theme, layout, etc.
-        builtin.current_buffer_fuzzy_find(require('telescope.themes').get_dropdown {
+        builtin.current_buffer_fuzzy_find(require('telescope.themes').get_cursor {
           winblend = 10,
           previewer = false,
+          layout_config = { height = 0.25 },
+          prompt_title = 'Find in File',
         })
       end, { desc = '[/] Fuzzily search in current buffer' })
 
@@ -539,7 +480,6 @@ require('lazy').setup({
 
       vim.keymap.set('n', '<leader>xl', '<cmd>XcodebuildToggleLogs<cr>', { desc = 'Toggle Xcodebuild Logs' })
       vim.keymap.set('n', '<leader>xb', '<cmd>XcodebuildBuild<cr>', { desc = 'Build Project' })
-      vim.keymap.set('n', '<leader>xr', '<cmd>XcodebuildBuildRun<cr>', { desc = 'Build & Run Project' })
       vim.keymap.set('n', '<leader>xt', '<cmd>XcodebuildTest<cr>', { desc = 'Run Tests' })
       vim.keymap.set('n', '<leader>xT', '<cmd>XcodebuildTestClass<cr>', { desc = 'Run This Test Class' })
       vim.keymap.set('n', '<leader>X', '<cmd>XcodebuildPicker<cr>', { desc = 'Show All Xcodebuild Actions' })
@@ -557,14 +497,27 @@ require('lazy').setup({
       'wojciech-kulik/xcodebuild.nvim',
     },
     config = function()
+      local dap = require 'dap'
       local xcodebuild = require 'xcodebuild.integrations.dap'
-
-      -- TODO: change it to your local codelldb path
       local codelldbPath = '/Users/drewjohnson/.local/extension/adapter/codelldb'
+      local dotnetDebuggerPath = '/usr/local/bin/netcoredbg/netcoredbg'
 
       xcodebuild.setup(codelldbPath)
 
-      vim.keymap.set('n', '<leader>dd', xcodebuild.build_and_debug, { desc = 'Build & Debug' })
+      dap.adapters.coreclr = {
+        type = 'executable',
+        command = dotnetDebuggerPath,
+        args = { '--interpreter=vscode' },
+      }
+
+      dap.configurations.cs = {
+        {
+          type = 'coreclr',
+          name = 'launch - netcoredbg',
+          request = 'launch',
+        },
+      }
+
       vim.keymap.set('n', '<leader>dr', xcodebuild.debug_without_build, { desc = 'Debug Without Building' })
       vim.keymap.set('n', '<leader>dt', xcodebuild.debug_tests, { desc = 'Debug Tests' })
       vim.keymap.set('n', '<leader>dT', xcodebuild.debug_class_tests, { desc = 'Debug Class Tests' })
@@ -603,9 +556,25 @@ require('lazy').setup({
     lazy = true,
     config = function()
       require('dapui').setup {
+        element_mappings = {},
+        expand_lines = true,
+        force_buffers = true,
+        render = {
+          indent = 1,
+          max_value_lines = 100,
+        },
+        mappings = {
+          edit = 'e',
+          expand = { '<CR>', '<2-LeftMouse>' },
+          open = 'o',
+          remove = 'd',
+          repl = 'r',
+          toggle = 't',
+        },
         controls = {
           element = 'repl',
           enabled = true,
+          icons = {},
         },
         floating = {
           border = 'single',
@@ -617,27 +586,32 @@ require('lazy').setup({
         layouts = {
           {
             elements = {
-              { id = 'stacks', size = 0.25 },
-              { id = 'scopes', size = 0.25 },
-              { id = 'breakpoints', size = 0.25 },
-              { id = 'watches', size = 0.25 },
+              --{ id = 'stacks', size = 0.25 },
+              --{ id = 'scopes', size = 0.25 },
+              --{ id = 'breakpoints', size = 0.25 },
+              --{ id = 'watches', size = 0.25 },
+              --{ id = 'repl', size = 0.50 },
             },
             position = 'left',
             size = 60,
           },
           {
             elements = {
-              { id = 'repl', size = 0.35 },
-              { id = 'console', size = 0.65 },
+              { id = 'console', size = 0.75 },
+              { id = 'repl', size = 0.25 },
             },
             position = 'bottom',
-            size = 10,
+            size = 30,
           },
         },
       }
 
       local dap, dapui = require 'dap', require 'dapui'
 
+      -- vim.keymap.set('n', '<leader>co', function()
+      --   local dapConsole = dapui.elements.console
+      --   dapConsole.
+      -- end, { desc = 'Dap Console' })
       vim.keymap.set('n', '<leader>du', function()
         dapui.toggle()
       end, { desc = 'Dap-UI Toggle' })
@@ -651,6 +625,63 @@ require('lazy').setup({
       dap.listeners.before.event_exited['dapui_config'] = function()
         dapui.close()
       end
+    end,
+  },
+  {
+    'seblyng/roslyn.nvim',
+    ft = 'cs',
+    ---@module 'roslyn.config'
+    ---@type RoslynNvimConfig
+    opts = {
+      -- your configuration comes here; leave empty for default settings
+    },
+  },
+  {
+    'iabdelkareem/csharp.nvim',
+    dependencies = {
+      'williamboman/mason.nvim', -- Required, automatically installs omnisharp
+      'mfussenegger/nvim-dap',
+      'Tastyep/structlog.nvim', -- Optional, but highly recommended for debugging
+    },
+    config = function()
+      require('mason').setup() -- Mason setup must run before csharp, only if you want to use omnisharp
+      require('csharp').setup {
+        lsp = {
+          -- Sets if you want to use omnisharp as your LSP
+          omnisharp = {
+            -- When set to false, csharp.nvim won't launch omnisharp automatically.
+            enable = false,
+            -- When set, csharp.nvim won't install omnisharp automatically. Instead, the omnisharp instance in the cmd_path will be used.
+            cmd_path = nil,
+            -- The default timeout when communicating with omnisharp
+            default_timeout = 1000,
+            -- Settings that'll be passed to the omnisharp server
+            enable_editor_config_support = false,
+            organize_imports = false,
+            load_projects_on_demand = false,
+            enable_analyzers_support = false,
+            enable_import_completion = false,
+            include_prerelease_sdks = false,
+            analyze_open_documents_only = false,
+            enable_package_auto_restore = false,
+            -- Launches omnisharp in debug mode
+            debug = false,
+          },
+          -- Sets if you want to use roslyn as your LSP
+          roslyn = {
+            -- When set to true, csharp.nvim will launch roslyn automatically.
+            enable = true,
+            -- Path to the roslyn LSP see 'Roslyn LSP Specific Prerequisites' above.
+            cmd_path = nil,
+          },
+          -- The capabilities to pass to the omnisharp server
+          capabilities = {},
+          -- on_attach function that'll be called when the LSP is attached to a buffer
+          on_attach = nil,
+        },
+        dap = {},
+        logging = {},
+      }
     end,
   },
   { -- LSP Configuration & Plugins
@@ -671,6 +702,7 @@ require('lazy').setup({
     },
     config = function()
       local lspconfig = require 'lspconfig'
+
       lspconfig.sourcekit.setup {
         capabilities = {
           workspace = {
@@ -679,6 +711,9 @@ require('lazy').setup({
             },
           },
         },
+        on_init = function(client)
+          client.offset_encoding = 'utf-8'
+        end,
       }
 
       -- Brief aside: **What is LSP?**
@@ -722,6 +757,29 @@ require('lazy').setup({
             vim.keymap.set('n', keys, func, { buffer = event.buf, desc = 'LSP: ' .. desc })
           end
 
+          if vim.bo[0].filetype == 'cs' then
+            map('<leader>dd', require('csharp').debug_project, '[D]ebug Project')
+            map('<leader>rr', require('csharp').run_project, '[R]un Project')
+          elseif vim.bo[0].filetype == 'swift' then
+            local xcodebuild = require 'xcodebuild.integrations.dap'
+
+            map('<leader>rr', '<cmd>XcodebuildBuildRun<cr>', 'Build & Run Project')
+            map('<leader>dd', xcodebuild.build_and_debug, 'Build & Debug')
+          end
+
+          local client = vim.lsp.get_client_by_id(event.data.client_id)
+
+          if client.name == 'omnisharp' then
+            client.server_capabilities.documentHighlightProvider = false
+            client.server_capabilities.completionProvider = false
+            client.server_capabilities.documentFormattingProvider = false
+            client.server_capabilities.codeActionProvider = false
+            client.server_capabilities.codeLensProvider = false
+            client.server_capabilities.colorProvider = false
+            client.capabilities.textDocument.publishDiagnostics = false
+            client.capabilities.textDocument.hover = false
+          end
+
           -- Jump to the definition of the word under your cursor.
           --  This is where a variable was first declared, or where a function is defined, etc.
           --  To jump back, press <C-t>.
@@ -758,6 +816,19 @@ require('lazy').setup({
           -- Opens a popup that displays documentation about the word under your cursor
           --  See `:help K` for why this keymap.
           map('K', vim.lsp.buf.hover, 'Hover Documentation')
+
+          --vim.o.winborder = 'rounded'
+          local hover = vim.lsp.buf.hover
+          ---@diagnostic disable-next-line: duplicate-set-field
+          vim.lsp.buf.hover = function()
+            return hover {
+              border = 'single',
+              -- max_width = 100,
+              max_width = math.floor(vim.o.columns * 0.7),
+              max_height = math.floor(vim.o.lines * 0.7),
+            }
+          end
+          vim.lsp.handlers['textDocument/signatureHelp'] = vim.lsp.with(vim.lsp.handlers.signature_help, { border = 'rounded' })
 
           -- WARN: This is not Goto Definition, this is Goto Declaration.
           --  For example, in C this would take you to the header.
@@ -824,6 +895,7 @@ require('lazy').setup({
         clangd = {
           init_options = { compilationDatabasePath = '.' },
         },
+        roslyn = {},
         -- gopls = {},
         -- pyright = {},
         -- rust_analyzer = {},
@@ -858,7 +930,12 @@ require('lazy').setup({
       --    :Mason
       --
       --  You can press `g?` for help in this menu.
-      require('mason').setup()
+      require('mason').setup {
+        registries = {
+          'github:mason-org/mason-registry',
+          'github:Crashdummyy/mason-registry',
+        },
+      }
 
       -- You can add other tools here that you want Mason to install
       -- for you, so that they are available from within Neovim.
@@ -902,7 +979,7 @@ require('lazy').setup({
         -- Disable "format_on_save lsp_fallback" for languages that don't
         -- have a well standardized coding style. You can add additional
         -- languages here or re-enable it for the disabled ones.
-        local disable_filetypes = { c = true, cpp = true, swift = true }
+        local disable_filetypes = { c = true, cpp = true, swift = true, cs = true }
         return {
           timeout_ms = 500,
           lsp_fallback = not disable_filetypes[vim.bo[bufnr].filetype],
@@ -959,6 +1036,18 @@ require('lazy').setup({
               { name = 'nvim_lsm' },
               { name = 'buffer' },
               { name = 'path' },
+            },
+            window = {
+              --completion = cmp.config.window.bordered(),
+              --documentation = cmp.config.window.bordered(),
+              completion = {
+                border = 'rounded',
+                winhighlight = 'Normal:CmpNormal,FloatBorder:BorderBg',
+              },
+              documentation = {
+                border = 'rounded',
+                winhighlight = 'Normal:CmpNormal,FloatBorder:BorderBg',
+              },
             },
           }
           cmp.setup(opts)
@@ -1158,6 +1247,69 @@ require('lazy').setup({
       --    - Treesitter + textobjects: https://github.com/nvim-treesitter/nvim-treesitter-textobjects
     end,
   },
+  -- {
+  --   'nvim-treesitter/nvim-treesitter-textobjects',
+  --   lazy = false,
+  --   enabled = true,
+  --   ft = { 'c', 'swift' },
+  --   dependencies = { 'nvim-treesitter/nvim-treesitter' },
+  --   config = function()
+  --     require('nvim-treesitter.configs').setup {
+  --       textobjects = {
+  --         move = {
+  --           enable = true,
+  --           set_jumps = true, -- whether to set jumps in the jumplist
+  --           goto_next_start = {
+  --             [']m'] = '@function.outer',
+  --             ['gj'] = '@function.outer',
+  --             [']]'] = '@class.outer',
+  --             [']b'] = '@block.outer',
+  --             [']a'] = '@parameter.inner',
+  --           },
+  --           goto_next_end = {
+  --             [']M'] = '@function.outer',
+  --             ['gJ'] = '@function.outer',
+  --             [']['] = '@class.outer',
+  --             [']B'] = '@block.outer',
+  --             [']A'] = '@parameter.inner',
+  --           },
+  --           goto_previous_start = {
+  --             ['[m'] = '@function.outer',
+  --             ['gk'] = '@function.outer',
+  --             ['[['] = '@class.outer',
+  --             ['[b'] = '@block.outer',
+  --             ['[a'] = '@parameter.inner',
+  --           },
+  --           goto_previous_end = {
+  --             ['[M'] = '@function.outer',
+  --             ['gK'] = '@function.outer',
+  --             ['[]'] = '@class.outer',
+  --             ['[B'] = '@block.outer',
+  --             ['[A'] = '@parameter.inner',
+  --           },
+  --         },
+  --         select = {
+  --           enable = true,
+  --           lookahead = true,
+  --           keymaps = {
+  --             ['af'] = '@function.outer',
+  --             ['if'] = '@function.inner',
+  --             ['ac'] = '@class.outer',
+  --             ['ic'] = '@class.inner',
+  --             ['ab'] = '@block.outer',
+  --             ['ib'] = '@block.inner',
+  --             ['al'] = '@loop.outer',
+  --             ['il'] = '@loop.inner',
+  --             ['a/'] = '@comment.outer',
+  --             ['i/'] = '@comment.outer', -- no inner for comment
+  --             ['aa'] = '@parameter.outer', -- parameter -> argument
+  --             ['ia'] = '@parameter.inner',
+  --           },
+  --         },
+  --       },
+  --     }
+  --   end,
+  -- },
 
   -- The following two comments only work if you have downloaded the kickstart repo, not just copy pasted the
   -- init.lua. If you want these files, they are in the repository, so you can just download them and
