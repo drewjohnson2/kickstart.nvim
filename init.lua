@@ -5,7 +5,7 @@ vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
 -- Set to true if you have a Nerd Font installed and selected in the terminal
-vim.g.have_nerd_font = false
+vim.g.have_nerd_font = true
 
 -- [[ Setting options ]]
 -- See `:help vim.opt`
@@ -114,7 +114,7 @@ vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Go to next [D]iagn
 vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, { desc = 'Show diagnostic [E]rror messages' })
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
 
-vim.keymap.set('n', '<leader>tt', '<cmd>terminal<CR>', { desc = 'Open Terminal' })
+--vim.keymap.set('n', '<leader>tt', '<cmd>terminal<CR>', { desc = 'Open Terminal' })
 
 -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
 -- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
@@ -171,6 +171,23 @@ if not vim.loop.fs_stat(lazypath) then
 end ---@diagnostic disable-next-line: undefined-field
 vim.opt.rtp:prepend(lazypath)
 
+local function rebuild_project(co, path)
+  local spinner = require('easy-dotnet.ui-modules.spinner').new()
+  spinner:start_spinner 'Building'
+  vim.fn.jobstart(string.format('dotnet build %s', path), {
+    on_exit = function(_, return_code)
+      if return_code == 0 then
+        spinner:stop_spinner 'Built successfully'
+      else
+        spinner:stop_spinner('Build failed with exit code ' .. return_code, vim.log.levels.ERROR)
+        error 'Build failed'
+      end
+      coroutine.resume(co)
+    end,
+  })
+  coroutine.yield()
+end
+
 -- [[ Configure and install plugins ]]
 --
 --  To check the current status of your plugins, run
@@ -195,6 +212,201 @@ require('lazy').setup({
   --  This is equivalent to:
   --    require('Comment').setup({})
   {
+    'folke/snacks.nvim',
+    priority = 1000,
+    lazy = false,
+    keys = {
+      {
+        '<leader>nh',
+        function()
+          ---@param id? number|string
+          Snacks.notifier.hide(id)
+        end,
+        desc = 'Dismiss Notification',
+      },
+      {
+        '<leader>bl',
+        function()
+          ---@param opts? snacks.terminal.Opts | { count?: number }
+          Snacks.git.blame_line(opts)
+        end,
+        desc = 'Blame Line',
+      },
+      {
+        '<leader>tt',
+        function()
+          ---@param cmd? string | string[]
+          ---@param opts? snacks.terminal.Opts
+          Snacks.terminal.toggle(cmd, opts)
+        end,
+        desc = 'Open Terminal',
+      },
+      {
+        '<leader>gs',
+        function()
+          Snacks.picker.git_status()
+        end,
+        desc = 'Git Status',
+      },
+      {
+        '<leader>gl',
+        function()
+          Snacks.picker.git_log()
+        end,
+        desc = 'Git Log',
+      },
+      {
+        '<leader>gg',
+        function()
+          Snacks.picker.git_diff()
+        end,
+        desc = 'Git Diff',
+      },
+      {
+        '<leader>lf',
+        function()
+          Snacks.picker.git_log_file()
+        end,
+        desc = 'Git Log File',
+      },
+      {
+        '<leader>sf',
+        function()
+          Snacks.picker.files()
+        end,
+        desc = 'Find Files',
+      },
+      {
+        '<leader>sg',
+        function()
+          Snacks.picker.grep()
+        end,
+        desc = 'Grep',
+      },
+      {
+        '<leader><leader>',
+        function()
+          Snacks.picker.buffers()
+        end,
+        desc = 'Search Open Buffers',
+      },
+      {
+        '<leader>sr',
+        function()
+          Snacks.picker.resume()
+        end,
+        desc = 'Resume Search',
+      },
+      {
+        '<leader>gr',
+        function()
+          Snacks.picker.lsp_references()
+        end,
+        desc = 'Get References',
+      },
+      {
+        '<leader>gI',
+        function()
+          Snacks.picker.lsp_implementations()
+        end,
+        desc = 'Goto Implementation',
+      },
+      {
+        '<leader>gd',
+        function()
+          Snacks.picker.lsp_definitions()
+        end,
+        desc = 'Goto Definition',
+      },
+      {
+        '<leader>ds',
+        function()
+          Snacks.picker.lsp_symbols()
+        end,
+        desc = 'Document Symbols',
+      },
+      {
+        '<leader>ws',
+        function()
+          Snacks.picker.lsp_workspace_symbols()
+        end,
+        desc = 'Workspace Symbols',
+      },
+      {
+        '<leader>sw',
+        function()
+          Snacks.picker.grep_word()
+        end,
+        desc = 'Search Word',
+      },
+      {
+        '<leader>ch',
+        function()
+          Snacks.picker.command_history()
+        end,
+        desc = 'Command Histroy',
+      },
+      {
+        '<leader>nn',
+        function()
+          Snacks.picker.notifications()
+        end,
+        desc = 'Notifications',
+      },
+      {
+        '<leader>gb',
+        function()
+          Snacks.picker.git_branches()
+        end,
+        desc = 'Git Branches',
+      },
+      {
+        '<leader>/',
+        function()
+          Snacks.picker.lines()
+        end,
+        desc = 'Search in Buffer',
+      },
+      {
+        '<leader>s/',
+        function()
+          Snacks.picker.grep_buffers()
+        end,
+        desc = 'Search in Buffer',
+      },
+      {
+        '<leader>se',
+        function()
+          ---@param opts? snacks.picker.explorer.Config|()
+          Snacks.explorer()
+        end,
+        desc = 'Open Explorer',
+      },
+    },
+    ---@type snacks.Config
+    opts = {
+      notifier = { enabled = true },
+      dashboard = {},
+      git = { enabled = true },
+      terminal = {},
+      picker = {
+        sources = {
+          grep = {
+            layout = {
+              layout = { position = 'bottom', height = 30 },
+            },
+          },
+          grep_word = {
+            layout = { position = 'bottom', height = 30 },
+          },
+          lines = {
+            layout = { preset = 'vscode' },
+          },
+        },
+      },
+    },
+  },
+  {
     'mbbill/undotree',
   },
   {
@@ -212,32 +424,30 @@ require('lazy').setup({
     branch = '3.2',
     dependencies = {
       'nvim-lua/plenary.nvim',
-      --'nvim-tree/nvim-web-devicons',
+      'nvim-tree/nvim-web-devicons',
       'MunifTanjim/nui.nvim',
     },
     config = function()
-      vim.keymap.set('n', '<leader>nt', '<Cmd>Neotree toggle<CR>')
-
       require('neo-tree').setup {
         default_component_configs = {
-          icon = {
-            folder_closed = '+',
-            folder_open = '-',
-            folder_empty = '%',
-            default = '',
-          },
-          git_status = {
-            symbols = {
-              deleted = '',
-              renamed = '',
-              modified = '',
-              untracked = '',
-              ignored = '',
-              unstaged = '',
-              staged = '',
-              conflict = '',
-            },
-          },
+          -- icon = {
+          --   folder_closed = '+',
+          --   folder_open = '-',
+          --   folder_empty = '%',
+          --   default = '',
+          -- },
+          -- git_status = {
+          --   symbols = {
+          --     deleted = '',
+          --     renamed = '',
+          --     modified = '',
+          --     untracked = '',
+          --     ignored = '',
+          --     unstaged = '',
+          --     staged = '',
+          --     conflict = '',
+          --   },
+          -- },
         },
         filesystem = {
           follow_current_file = { enabled = true },
@@ -249,17 +459,17 @@ require('lazy').setup({
           buffers = {
             follow_current_file = true,
           },
-          components = {
-            icon = function(config, node, state)
-              if node.type == 'file' then
-                return {
-                  text = '* ',
-                  highlight = config.highlight,
-                }
-              end
-              return require('neo-tree.sources.common.components').icon(config, node, state)
-            end,
-          },
+          -- components = {
+          --   icon = function(config, node, state)
+          --     if node.type == 'file' then
+          --       return {
+          --         text = '* ',
+          --         highlight = config.highlight,
+          --       }
+          --     end
+          --     return require('neo-tree.sources.common.components').icon(config, node, state)
+          --   end,
+          -- },
         },
       }
     end,
@@ -365,7 +575,7 @@ require('lazy').setup({
       { 'nvim-telescope/telescope-ui-select.nvim' },
 
       -- Useful for getting pretty icons, but requires a Nerd Font.
-      --{ 'nvim-tree/nvim-web-devicons', enabled = vim.g.have_nerd_font },
+      { 'nvim-tree/nvim-web-devicons', enabled = vim.g.have_nerd_font },
     },
     config = function()
       -- Telescope is a fuzzy finder that comes with a lot of different things that
@@ -414,7 +624,7 @@ require('lazy').setup({
       local builtin = require 'telescope.builtin'
       vim.keymap.set('n', '<leader>sh', builtin.help_tags, { desc = '[S]earch [H]elp' })
       vim.keymap.set('n', '<leader>sk', builtin.keymaps, { desc = '[S]earch [K]eymaps' })
-      vim.keymap.set('n', '<leader>sf', builtin.find_files, { desc = '[S]earch [F]iles' })
+      --vim.keymap.set('n', '<leader>sf', builtin.find_files, { desc = '[S]earch [F]iles' })
       vim.keymap.set('n', '<leader>ss', builtin.builtin, { desc = '[S]earch [S]elect Telescope' })
 
       vim.keymap.set('n', '<leader>sw', function()
@@ -424,40 +634,40 @@ require('lazy').setup({
       end, { desc = '[S]earch current [W]ord' })
 
       vim.keymap.set('n', '<leader>sd', builtin.diagnostics, { desc = '[S]earch [D]iagnostics' })
-      vim.keymap.set('n', '<leader>sr', builtin.resume, { desc = '[S]earch [R]esume' })
+      --vim.keymap.set('n', '<leader>sr', builtin.resume, { desc = '[S]earch [R]esume' })
       vim.keymap.set('n', '<leader>s.', builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
-      vim.keymap.set('n', '<leader><leader>', builtin.buffers, { desc = '[ ] Find existing buffers' })
-      vim.keymap.set('n', '<leader>gc', builtin.git_commits, { desc = '[G]it [C]ommits' })
-      vim.keymap.set('n', '<leader>gs', builtin.git_status, { desc = '[G]it [S]tatus' })
+      --vim.keymap.set('n', '<leader><leader>', builtin.buffers, { desc = '[ ] Find existing buffers' })
+      --vim.keymap.set('n', '<leader>gc', builtin.git_commits, { desc = '[G]it [C]ommits' })
+      --vim.keymap.set('n', '<leader>gs', builtin.git_status, { desc = '[G]it [S]tatus' })
 
-      vim.keymap.set('n', '<leader>sg', function()
-        builtin.live_grep(require('telescope.themes').get_ivy {
-          winblend = 20,
-          layout_config = {
-            width = 0.99,
-          },
-        })
-      end, { desc = '[S]earch by [G]rep' })
+      -- vim.keymap.set('n', '<leader>sg', function()
+      --   builtin.live_grep(require('telescope.themes').get_ivy {
+      --     winblend = 20,
+      --     layout_config = {
+      --       width = 0.99,
+      --     },
+      --   })
+      -- end, { desc = '[S]earch by [G]rep' })
 
-      -- Slightly advanced example of overriding default behavior and theme
-      vim.keymap.set('n', '<leader>/', function()
-        -- You can pass additional configuration to Telescope to change the theme, layout, etc.
-        builtin.current_buffer_fuzzy_find(require('telescope.themes').get_cursor {
-          winblend = 10,
-          previewer = false,
-          layout_config = { height = 0.25 },
-          prompt_title = 'Find in File',
-        })
-      end, { desc = '[/] Fuzzily search in current buffer' })
+      --Slightly advanced example of overriding default behavior and theme
+      -- vim.keymap.set('n', '<leader>/', function()
+      --   -- You can pass additional configuration to Telescope to change the theme, layout, etc.
+      --   builtin.current_buffer_fuzzy_find(require('telescope.themes').get_cursor {
+      --     winblend = 10,
+      --     previewer = false,
+      --     layout_config = { height = 0.25 },
+      --     prompt_title = 'Find in File',
+      --   })
+      -- end, { desc = '[/] Fuzzily search in current buffer' })
 
       -- It's also possible to pass additional configuration options.
       --  See `:help telescope.builtin.live_grep()` for information about particular keys
-      vim.keymap.set('n', '<leader>s/', function()
-        builtin.live_grep {
-          grep_open_files = true,
-          prompt_title = 'Live Grep in Open Files',
-        }
-      end, { desc = '[S]earch [/] in Open Files' })
+      -- vim.keymap.set('n', '<leader>s/', function()
+      --   builtin.live_grep {
+      --     grep_open_files = true,
+      --     prompt_title = 'Live Grep in Open Files',
+      --   }
+      -- end, { desc = '[S]earch [/] in Open Files' })
 
       -- Shortcut for searching your Neovim configuration files
       vim.keymap.set('n', '<leader>sn', function()
@@ -498,25 +708,79 @@ require('lazy').setup({
     },
     config = function()
       local dap = require 'dap'
+      local dapui = require 'dapui'
       local xcodebuild = require 'xcodebuild.integrations.dap'
       local codelldbPath = '/Users/drewjohnson/.local/extension/adapter/codelldb'
       local dotnetDebuggerPath = '/usr/local/bin/netcoredbg/netcoredbg'
+      local dotnet = require 'easy-dotnet'
+
+      dap.listeners.before.attach.dapui_config = function()
+        dapui.open()
+      end
+      dap.listeners.before.launch.dapui_config = function()
+        dapui.open()
+      end
+      dap.listeners.before.event_terminated.dapui_config = function()
+        dapui.close()
+      end
+      dap.listeners.before.event_exited.dapui_config = function()
+        dapui.close()
+      end
 
       xcodebuild.setup(codelldbPath)
 
-      dap.adapters.coreclr = {
-        type = 'executable',
-        command = dotnetDebuggerPath,
-        args = { '--interpreter=vscode' },
-      }
+      local function file_exists(path)
+        local stat = vim.loop.fs_stat(path)
+        return stat and stat.type == 'file'
+      end
 
-      dap.configurations.cs = {
-        {
-          type = 'coreclr',
-          name = 'launch - netcoredbg',
-          request = 'launch',
-        },
-      }
+      local debug_dll = nil
+
+      local function ensure_dll()
+        if debug_dll ~= nil then
+          return debug_dll
+        end
+        local dll = dotnet.get_debug_dll()
+        debug_dll = dll
+        return dll
+      end
+
+      for _, value in ipairs { 'cs', 'fsharp' } do
+        dap.configurations[value] = {
+          {
+            type = 'coreclr',
+            name = 'Program',
+            request = 'launch',
+            env = function()
+              local dll = ensure_dll()
+              local vars = dotnet.get_environment_variables(dll.project_name, dll.absolute_project_path)
+              return vars or nil
+            end,
+            program = function()
+              local dll = ensure_dll()
+              local co = coroutine.running()
+              rebuild_project(co, dll.project_path)
+              if not file_exists(dll.target_path) then
+                error('Project has not been built, path: ' .. dll.target_path)
+              end
+              return dll.target_path
+            end,
+            cwd = function()
+              local dll = ensure_dll()
+              return dll.absolute_project_path
+            end,
+          },
+        }
+
+        dap.listeners.before['event_terminated']['easy-dotnet'] = function()
+          debug_dll = nil
+        end
+        dap.adapters.coreclr = {
+          type = 'executable',
+          command = 'netcoredbg',
+          args = { '--interpreter=vscode' },
+        }
+      end
 
       vim.keymap.set('n', '<leader>dr', xcodebuild.debug_without_build, { desc = 'Debug Without Building' })
       vim.keymap.set('n', '<leader>dt', xcodebuild.debug_tests, { desc = 'Debug Tests' })
@@ -586,9 +850,10 @@ require('lazy').setup({
         layouts = {
           {
             elements = {
-              --{ id = 'stacks', size = 0.25 },
               --{ id = 'scopes', size = 0.25 },
-              --{ id = 'breakpoints', size = 0.25 },
+              { id = 'breakpoints', size = 0.25 },
+              { id = 'stacks', size = 0.25 },
+              { id = 'console', size = 0.50 },
               --{ id = 'watches', size = 0.25 },
               --{ id = 'repl', size = 0.50 },
             },
@@ -597,8 +862,7 @@ require('lazy').setup({
           },
           {
             elements = {
-              { id = 'console', size = 0.75 },
-              { id = 'repl', size = 0.25 },
+              { id = 'repl', size = 0.99 },
             },
             position = 'bottom',
             size = 30,
@@ -636,51 +900,147 @@ require('lazy').setup({
       -- your configuration comes here; leave empty for default settings
     },
   },
+  -- {
+  --   'iabdelkareem/csharp.nvim',
+  --   dependencies = {
+  --     'williamboman/mason.nvim', -- Required, automatically installs omnisharp
+  --     'mfussenegger/nvim-dap',
+  --     'Tastyep/structlog.nvim', -- Optional, but highly recommended for debugging
+  --   },
+  --   config = function()
+  --     require('mason').setup() -- Mason setup must run before csharp, only if you want to use omnisharp
+  --     require('csharp').setup {
+  --       lsp = {
+  --         -- Sets if you want to use omnisharp as your LSP
+  --         omnisharp = {
+  --           -- When set to false, csharp.nvim won't launch omnisharp automatically.
+  --           enable = false,
+  --           -- When set, csharp.nvim won't install omnisharp automatically. Instead, the omnisharp instance in the cmd_path will be used.
+  --           cmd_path = nil,
+  --           -- The default timeout when communicating with omnisharp
+  --           default_timeout = 1000,
+  --           -- Settings that'll be passed to the omnisharp server
+  --           enable_editor_config_support = false,
+  --           organize_imports = false,
+  --           load_projects_on_demand = false,
+  --           enable_analyzers_support = false,
+  --           enable_import_completion = false,
+  --           include_prerelease_sdks = false,
+  --           analyze_open_documents_only = false,
+  --           enable_package_auto_restore = false,
+  --           -- Launches omnisharp in debug mode
+  --           debug = false,
+  --         },
+  --         -- Sets if you want to use roslyn as your LSP
+  --         roslyn = {
+  --           -- When set to true, csharp.nvim will launch roslyn automatically.
+  --           enable = true,
+  --           -- Path to the roslyn LSP see 'Roslyn LSP Specific Prerequisites' above.
+  --           cmd_path = nil,
+  --         },
+  --         -- The capabilities to pass to the omnisharp server
+  --         capabilities = {},
+  --         -- on_attach function that'll be called when the LSP is attached to a buffer
+  --         on_attach = nil,
+  --       },
+  --       dap = {},
+  --       logging = {},
+  --     }
+  --   end,
+  -- },
   {
-    'iabdelkareem/csharp.nvim',
-    dependencies = {
-      'williamboman/mason.nvim', -- Required, automatically installs omnisharp
-      'mfussenegger/nvim-dap',
-      'Tastyep/structlog.nvim', -- Optional, but highly recommended for debugging
-    },
+    'GustavEikaas/easy-dotnet.nvim',
+    dependencies = { 'nvim-lua/plenary.nvim', 'nvim-telescope/telescope.nvim' },
     config = function()
-      require('mason').setup() -- Mason setup must run before csharp, only if you want to use omnisharp
-      require('csharp').setup {
-        lsp = {
-          -- Sets if you want to use omnisharp as your LSP
-          omnisharp = {
-            -- When set to false, csharp.nvim won't launch omnisharp automatically.
-            enable = false,
-            -- When set, csharp.nvim won't install omnisharp automatically. Instead, the omnisharp instance in the cmd_path will be used.
-            cmd_path = nil,
-            -- The default timeout when communicating with omnisharp
-            default_timeout = 1000,
-            -- Settings that'll be passed to the omnisharp server
-            enable_editor_config_support = false,
-            organize_imports = false,
-            load_projects_on_demand = false,
-            enable_analyzers_support = false,
-            enable_import_completion = false,
-            include_prerelease_sdks = false,
-            analyze_open_documents_only = false,
-            enable_package_auto_restore = false,
-            -- Launches omnisharp in debug mode
-            debug = false,
+      local dotnet = require 'easy-dotnet'
+
+      dotnet.setup {
+        --Optional function to return the path for the dotnet sdk (e.g C:/ProgramFiles/dotnet/sdk/8.0.0)
+        -- easy-dotnet will resolve the path automatically if this argument is omitted, for a performance improvement you can add a function that returns a hardcoded string
+        -- You should define this function to return a hardcoded path for a performance improvement 🚀
+        get_sdk_path = get_sdk_path,
+        ---@type TestRunnerOptions
+        test_runner = {
+          ---@type "split" | "float" | "buf"
+          viewmode = 'float',
+          enable_buffer_test_execution = true, --Experimental, run tests directly from buffer
+          noBuild = true,
+          icons = {
+            passed = '',
+            skipped = '',
+            failed = '',
+            success = '',
+            reload = '',
+            test = '',
+            sln = '󰘐',
+            project = '󰘐',
+            dir = '',
+            package = '',
           },
-          -- Sets if you want to use roslyn as your LSP
-          roslyn = {
-            -- When set to true, csharp.nvim will launch roslyn automatically.
-            enable = true,
-            -- Path to the roslyn LSP see 'Roslyn LSP Specific Prerequisites' above.
-            cmd_path = nil,
+          icons = nil,
+          mappings = {
+            run_test_from_buffer = { lhs = '<leader>r', desc = 'run test from buffer' },
+            debug_test = { lhs = '<leader>d', desc = 'debug test' },
+            go_to_file = { lhs = 'g', desc = 'go to file' },
+            run_all = { lhs = '<leader>R', desc = 'run all tests' },
+            run = { lhs = '<leader>r', desc = 'run test' },
+            peek_stacktrace = { lhs = '<leader>p', desc = 'peek stacktrace of failed test' },
+            expand = { lhs = 'o', desc = 'expand' },
+            expand_node = { lhs = 'E', desc = 'expand node' },
+            expand_all = { lhs = '-', desc = 'expand all' },
+            collapse_all = { lhs = 'W', desc = 'collapse all' },
+            close = { lhs = 'q', desc = 'close testrunner' },
+            refresh_testrunner = { lhs = '<C-r>', desc = 'refresh testrunner' },
           },
-          -- The capabilities to pass to the omnisharp server
-          capabilities = {},
-          -- on_attach function that'll be called when the LSP is attached to a buffer
-          on_attach = nil,
+          --- Optional table of extra args e.g "--blame crash"
+          additional_args = {},
         },
-        dap = {},
-        logging = {},
+        new = {
+          project = {
+            prefix = 'sln', -- "sln" | "none"
+          },
+        },
+        ---@param action "test" | "restore" | "build" | "run"
+        terminal = function(path, action, args)
+          local commands = {
+            run = function()
+              return string.format('dotnet run --project %s %s', path, args)
+            end,
+            test = function()
+              return string.format('dotnet test %s %s', path, args)
+            end,
+            restore = function()
+              return string.format('dotnet restore %s %s', path, args)
+            end,
+            build = function()
+              return string.format('dotnet build %s %s', path, args)
+            end,
+            watch = function()
+              return string.format('dotnet watch --project %s %s', path, args)
+            end,
+          }
+
+          local command = commands[action]() .. '\r'
+          vim.cmd 'split'
+          vim.cmd('term ' .. command)
+        end,
+        secrets = {
+          path = get_secret_path,
+        },
+        csproj_mappings = true,
+        fsproj_mappings = true,
+        auto_bootstrap_namespace = {
+          --block_scoped, file_scoped
+          type = 'block_scoped',
+          enabled = true,
+        },
+        -- choose which picker to use with the plugin
+        -- possible values are "telescope" | "fzf" | "snacks" | "basic"
+        -- if no picker is specified, the plugin will determine
+        -- the available one automatically with this priority:
+        -- telescope -> fzf -> snacks ->  basic
+        picker = 'telescope',
+        background_scanning = true,
       }
     end,
   },
@@ -758,8 +1118,10 @@ require('lazy').setup({
           end
 
           if vim.bo[0].filetype == 'cs' then
-            map('<leader>dd', require('csharp').debug_project, '[D]ebug Project')
-            map('<leader>rr', require('csharp').run_project, '[R]un Project')
+            --map('<leader>dd', require('csharp').debug_project, '[D]ebug Project')
+            map('<leader>rr', require('easy-dotnet').run, '[R]un Project')
+            map('<leader>tr', require('easy-dotnet').testrunner, 'Open [T]est [R]unner')
+            map('<leader>bs', require('easy-dotnet').build_solution, 'Open [T]est [R]unner')
           elseif vim.bo[0].filetype == 'swift' then
             local xcodebuild = require 'xcodebuild.integrations.dap'
 
@@ -783,14 +1145,14 @@ require('lazy').setup({
           -- Jump to the definition of the word under your cursor.
           --  This is where a variable was first declared, or where a function is defined, etc.
           --  To jump back, press <C-t>.
-          map('<leader>gd', require('telescope.builtin').lsp_definitions, '[G]oto [D]efinition')
+          -- map('<leader>gd', require('telescope.builtin').lsp_definitions, '[G]oto [D]efinition')
 
           -- Find references for the word under your cursor.
-          map('<leader>gr', require('telescope.builtin').lsp_references, '[G]oto [R]eferences')
+          --map('<leader>gr', require('telescope.builtin').lsp_references, '[G]oto [R]eferences')
 
           -- Jump to the implementation of the word under your cursor.
           --  Useful when your language has ways of declaring types without an actual implementation.
-          map('<leader>gI', require('telescope.builtin').lsp_implementations, '[G]oto [I]mplementation')
+          -- map('<leader>gI', require('telescope.builtin').lsp_implementations, '[G]oto [I]mplementation')
 
           -- Jump to the type of the word under your cursor.
           --  Useful when you're not sure what type a variable is and you want to see
@@ -799,11 +1161,11 @@ require('lazy').setup({
 
           -- Fuzzy find all the symbols in your current document.
           --  Symbols are things like variables, functions, types, etc.
-          map('<leader>ds', require('telescope.builtin').lsp_document_symbols, '[D]ocument [S]ymbols')
+          --map('<leader>ds', require('telescope.builtin').lsp_document_symbols, '[D]ocument [S]ymbols')
 
           -- Fuzzy find all the symbols in your current workspace.
           --  Similar to document symbols, except searches over your entire project.
-          map('<leader>ws', require('telescope.builtin').lsp_dynamic_workspace_symbols, '[W]orkspace [S]ymbols')
+          --map('<leader>ws', require('telescope.builtin').lsp_dynamic_workspace_symbols, '[W]orkspace [S]ymbols')
 
           -- Rename the variable under your cursor.
           --  Most Language Servers support renaming across files, etc.
@@ -1187,7 +1549,7 @@ require('lazy').setup({
       --  - va)  - [V]isually select [A]round [)]paren
       --  - yinq - [Y]ank [I]nside [N]ext [']quote
       --  - ci'  - [C]hange [I]nside [']quote
-      require('mini.ai').setup { n_lines = 500 }
+      --require('mini.ai').setup { n_lines = 500 }
 
       -- Add/delete/replace surroundings (brackets, quotes, etc.)
       --
@@ -1199,20 +1561,82 @@ require('lazy').setup({
       -- Simple and easy statusline.
       --  You could remove this setup call if you don't like it,
       --  and try some other statusline plugin
-      local statusline = require 'mini.statusline'
-      -- set use_icons to true if you have a Nerd Font
-      statusline.setup { use_icons = vim.g.have_nerd_font }
+      -- local statusline = require 'mini.statusline'
+      -- -- set use_icons to true if you have a Nerd Font
+      -- statusline.setup { use_icons = false }
 
       -- You can configure sections in the statusline by overriding their
       -- default behavior. For example, here we set the section for
       -- cursor location to LINE:COLUMN
-      ---@diagnostic disable-next-line: duplicate-set-field
-      statusline.section_location = function()
-        return '%2l:%-2v'
-      end
+      -----@diagnostic disable-next-line: duplicate-set-field
+      --statusline.section_location = function()
+      --   return '%2l:%-2v'
+      -- end
 
       -- ... and there is more!
       --  Check out: https://github.com/echasnovski/mini.nvim
+    end,
+  },
+  {
+    'nvim-lualine/lualine.nvim',
+    dependencies = { 'nvim-tree/nvim-web-devicons' },
+    config = function()
+      local lualine = require 'lualine'
+
+      lualine.setup {
+        options = {
+          icons_enabled = true,
+          theme = 'auto',
+          component_separators = { left = '', right = '' },
+          section_separators = { left = '', right = '' },
+          disabled_filetypes = {
+            statusline = {},
+            winbar = {},
+          },
+          ignore_focus = {},
+          always_divide_middle = true,
+          always_show_tabline = true,
+          globalstatus = false,
+          refresh = {
+            statusline = 1000,
+            tabline = 1000,
+            winbar = 1000,
+            refresh_time = 16, -- ~60fps
+            events = {
+              'WinEnter',
+              'BufEnter',
+              'BufWritePost',
+              'SessionLoadPost',
+              'FileChangedShellPost',
+              'VimResized',
+              'Filetype',
+              'CursorMoved',
+              'CursorMovedI',
+              'ModeChanged',
+            },
+          },
+        },
+        sections = {
+          lualine_a = { 'mode' },
+          lualine_b = { 'branch', 'diff', 'diagnostics' },
+          lualine_c = { 'filename' },
+          lualine_x = { 'encoding', 'fileformat', 'filetype', 'lsp_status' },
+          lualine_y = { 'progress' },
+          lualine_z = { 'location' },
+        },
+        inactive_sections = {
+          lualine_a = {},
+          lualine_b = {},
+          lualine_c = { 'filename' },
+          lualine_x = { 'location' },
+          lualine_y = {},
+          lualine_z = {},
+        },
+        tabline = {},
+        winbar = {},
+        inactive_winbar = {},
+        extensions = {},
+      }
     end,
   },
   { -- Highlight, edit, and navigate code
