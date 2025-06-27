@@ -5,7 +5,7 @@ vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
 -- Set to true if you have a Nerd Font installed and selected in the terminal
-vim.g.have_nerd_font = false
+vim.g.have_nerd_font = true
 
 -- [[ Setting options ]]
 -- See `:help vim.opt`
@@ -200,6 +200,66 @@ require('lazy').setup({
   --  This is equivalent to:
   --    require('Comment').setup({})
   {
+    'nvim-lualine/lualine.nvim',
+    dependencies = { 'nvim-tree/nvim-web-devicons' },
+    config = function()
+      require('lualine').setup {
+        options = {
+          icons_enabled = true,
+          theme = 'auto',
+          component_separators = { left = '', right = '' },
+          section_separators = { left = '', right = '' },
+          disabled_filetypes = {
+            statusline = {},
+            winbar = {},
+          },
+          ignore_focus = {},
+          always_divide_middle = true,
+          always_show_tabline = true,
+          globalstatus = false,
+          refresh = {
+            statusline = 1000,
+            tabline = 1000,
+            winbar = 1000,
+            refresh_time = 16, -- ~60fps
+            events = {
+              'WinEnter',
+              'BufEnter',
+              'BufWritePost',
+              'SessionLoadPost',
+              'FileChangedShellPost',
+              'VimResized',
+              'Filetype',
+              'CursorMoved',
+              'CursorMovedI',
+              'ModeChanged',
+            },
+          },
+        },
+        sections = {
+          lualine_a = { 'mode' },
+          lualine_b = { 'branch', 'diff', 'diagnostics' },
+          lualine_c = { 'filename' },
+          lualine_x = { 'encoding', 'fileformat', 'filetype', 'lsp_status' },
+          lualine_y = { 'progress' },
+          lualine_z = { 'location' },
+        },
+        inactive_sections = {
+          lualine_a = {},
+          lualine_b = {},
+          lualine_c = { 'filename' },
+          lualine_x = { 'location' },
+          lualine_y = {},
+          lualine_z = {},
+        },
+        tabline = {},
+        winbar = {},
+        inactive_winbar = {},
+        extensions = {},
+      }
+    end,
+  },
+  {
     'mbbill/undotree',
   },
   {
@@ -224,26 +284,26 @@ require('lazy').setup({
       vim.keymap.set('n', '<leader>nt', '<Cmd>Neotree toggle<CR>')
 
       require('neo-tree').setup {
-        default_component_configs = {
-          icon = {
-            folder_closed = '+',
-            folder_open = '-',
-            folder_empty = '%',
-            default = '',
-          },
-          git_status = {
-            symbols = {
-              deleted = '',
-              renamed = '',
-              modified = '',
-              untracked = '',
-              ignored = '',
-              unstaged = '',
-              staged = '',
-              conflict = '',
-            },
-          },
-        },
+        -- default_component_configs = {
+        -- icon = {
+        --   folder_closed = '+',
+        --   folder_open = '-',
+        --   folder_empty = '%',
+        --   default = '',
+        -- },
+        -- git_status = {
+        --   symbols = {
+        --     deleted = '',
+        --     renamed = '',
+        --     modified = '',
+        --     untracked = '',
+        --     ignored = '',
+        --     unstaged = '',
+        --     staged = '',
+        --     conflict = '',
+        --   },
+        -- },
+        -- },
         filesystem = {
           follow_current_file = { enabled = true },
           filtered_items = {
@@ -256,12 +316,12 @@ require('lazy').setup({
           },
           components = {
             icon = function(config, node, state)
-              if node.type == 'file' then
-                return {
-                  text = '* ',
-                  highlight = config.highlight,
-                }
-              end
+              -- if node.type == 'file' then
+              --   return {
+              --     text = '* ',
+              --     highlight = config.highlight,
+              --   }
+              -- end
               return require('neo-tree.sources.common.components').icon(config, node, state)
             end,
           },
@@ -920,7 +980,7 @@ require('lazy').setup({
       --  - va)  - [V]isually select [A]round [)]paren
       --  - yinq - [Y]ank [I]nside [N]ext [']quote
       --  - ci'  - [C]hange [I]nside [']quote
-      require('mini.ai').setup { n_lines = 500 }
+      -- require('mini.ai').setup { n_lines = 500 }
 
       -- Add/delete/replace surroundings (brackets, quotes, etc.)
       --
@@ -932,17 +992,17 @@ require('lazy').setup({
       -- Simple and easy statusline.
       --  You could remove this setup call if you don't like it,
       --  and try some other statusline plugin
-      local statusline = require 'mini.statusline'
+      --local statusline = require 'mini.statusline'
       -- set use_icons to true if you have a Nerd Font
-      statusline.setup { use_icons = vim.g.have_nerd_font }
+      -- statusline.setup { use_icons = vim.g.have_nerd_font }
 
       -- You can configure sections in the statusline by overriding their
       -- default behavior. For example, here we set the section for
       -- cursor location to LINE:COLUMN
       ---@diagnostic disable-next-line: duplicate-set-field
-      statusline.section_location = function()
-        return '%2l:%-2v'
-      end
+      -- statusline.section_location = function()
+      --   return '%2l:%-2v'
+      -- end
 
       -- ... and there is more!
       --  Check out: https://github.com/echasnovski/mini.nvim
